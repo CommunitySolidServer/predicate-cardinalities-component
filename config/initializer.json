@@ -1,0 +1,23 @@
+{
+  "@context":[
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^6.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/predicate-cardinalities-component/^1.0.0/components/context.jsonld"
+  ],
+  "@graph": [
+    {
+      "comment": "Initializes predicate cardinalities for all pods on the server.",
+      "@type": "PredicateCardinalitiesInitializer",
+      "@id": "urn:predicate-cardinalities:default:Initializer_Cardinalities",
+      "handler": { "@id": "urn:predicate-cardinalities:default:PredicateCardinalitiesHandler" },
+      "baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
+      "store": { "@id": "urn:solid-server:default:ResourceStore" }
+    },
+    {
+      "@id": "urn:solid-server:default:PrimaryParallelInitializer",
+      "@type": "ParallelHandler",
+      "handlers": [
+        { "@id" : "urn:predicate-cardinalities:default:Initializer_Cardinalities" }
+      ]
+    }
+  ]
+}

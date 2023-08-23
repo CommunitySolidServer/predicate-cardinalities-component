@@ -1,0 +1,16 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^6.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/predicate-cardinalities-component/^1.0.0/components/context.jsonld"
+  ],
+  "import": [
+    "predicate-cardinalities:config/handler.json",
+    "predicate-cardinalities:config/initializer.json",
+    "predicate-cardinalities:config/resource-store.json"
+  ],
+  "@graph": [
+    {
+      "comment": "Expose a view containing the predicate cardinalities in the pod."
+    }
+  ]
+}

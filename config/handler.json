@@ -1,0 +1,33 @@
+{
+  "@context":[
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^6.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/predicate-cardinalities-component/^1.0.0/components/context.jsonld"
+  ],
+  "@graph": [
+    {
+      "comment": "Handler class used to handle common tasks.",
+      "@id": "urn:predicate-cardinalities:default:PredicateCardinalitiesHandler",
+      "@type": "PredicateCardinalitiesHandler",
+      "keyValueStorage": { "@id": "urn:predicate-cardinalities:default:KeyValueStorage_Cardinalities" },
+      "auxiliaryStrategy": { "@id": "urn:solid-server:default:AuxiliaryStrategy" }
+    },
+    {
+      "comment": "Custom internal value storage for predicate cardinalities.",
+      "@id": "urn:predicate-cardinalities:default:KeyValueStorage_Cardinalities",
+      "@type": "EncodingPathStorage",
+      "relativePath": "/predicate-cardinalities/",
+      "source": {
+        "comment": "Internal value storage.",
+        "@type": "JsonResourceStorage",
+        "source": {
+          "@type": "LockingResourceStore",
+          "source": { "@id": "urn:solid-server:default:ResourceStore_Backend" },
+          "locks": { "@id": "urn:solid-server:default:ResourceLocker" },
+          "auxiliaryStrategy": { "@id": "urn:solid-server:default:AuxiliaryStrategy" }
+        },
+        "baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
+        "container": "/.internal/"
+      }
+    }
+  ]
+}
