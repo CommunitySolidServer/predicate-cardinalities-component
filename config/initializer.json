@@ -10,7 +10,8 @@
       "@id": "urn:predicate-cardinalities:default:Initializer_Cardinalities",
       "handler": { "@id": "urn:predicate-cardinalities:default:PredicateCardinalitiesHandler" },
       "baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
-      "store": { "@id": "urn:solid-server:default:ResourceStore" }
+      "store": { "@id": "urn:solid-server:default:ResourceStore" },
+      "emitter": { "@id": "urn:solid-server:default:ResourceStore" }
     },
     {
       "@id": "urn:solid-server:default:PrimaryParallelInitializer",

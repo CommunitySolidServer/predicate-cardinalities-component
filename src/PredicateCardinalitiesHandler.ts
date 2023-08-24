@@ -1,9 +1,13 @@
 import {
+  AccessMode,
   AuxiliaryStrategy,
+  Credentials,
+  IdentifierSetMultiMap,
   INTERNAL_QUADS,
   isContainerPath,
   KeyValueStorage,
   LDP,
+  PermissionReader,
   readableToQuads,
   ResourceStore
 } from "@solid/community-server";
@@ -11,12 +15,14 @@ import {
 export class PredicateCardinalitiesHandler {
   private readonly keyValueStorage: KeyValueStorage<string, unknown>;
   private readonly auxiliaryStrategy: AuxiliaryStrategy;
+  private readonly reader: PermissionReader;
 
   private readonly PREFIX = "predicate_cardinalities_";
 
-  public constructor(keyValueStorage: KeyValueStorage<string, unknown>, auxiliaryStrategy: AuxiliaryStrategy) {
+  public constructor(keyValueStorage: KeyValueStorage<string, unknown>, auxiliaryStrategy: AuxiliaryStrategy, reader: PermissionReader) {
     this.keyValueStorage = keyValueStorage;
     this.auxiliaryStrategy = auxiliaryStrategy;
+    this.reader = reader;
   }
 
   public async isInitialized(): Promise<boolean> {
@@ -57,12 +63,45 @@ export class PredicateCardinalitiesHandler {
       return;
     } else {
       console.log("\n" + path);
+
+      const credentials = {};
+      if (!await this.isReadable(path, credentials)) {
+        return;
+      }
+      // Now we're sure the resource is publicly readable.
+
       const representation = await store.getRepresentation({path: path}, {type: {[INTERNAL_QUADS]: 1}});
       const dataStore = await readableToQuads(representation.data);
 
-      for (const predicate of dataStore.getPredicates(null, null, null)) {
-        console.log(predicate);
+      // Map from predicates to cardinalities
+      const predicates = dataStore.getPredicates(null, null, null).map(predicate => predicate.value);
+      const cardinalities = predicates.reduce((acc: any, cur) => {
+        const obj: any = acc.find((obj: any) => obj.predicate === cur);
+        if (obj) {
+          obj.count++;
+        } else {
+          acc.push({predicate: cur, count: 1});
+        }
+        return acc;
+      }, []);
+      console.log(cardinalities);
+
+      // Add cardinalities to the cache.
+      for (const cardinality of cardinalities) {
+        const currentCount = await this.keyValueStorage.get(this.PREFIX + cardinality.predicate) as any || {public: 0};
+        currentCount.public += cardinality.count;
+        await this.keyValueStorage.set(this.PREFIX + cardinality.predicate, currentCount);
       }
+    }
+  }
+
+  private async isReadable(path: string, credentials: Credentials): Promise<boolean> {
+    const requestedModes = new IdentifierSetMultiMap([[{path: path}, AccessMode.read]]);
+    try {
+      const permissions = await this.reader.handleSafe({credentials, requestedModes});
+      return permissions.get({path: path})?.read === true;
+    } catch (error: unknown) {
+      return false;
     }
   }
 }
