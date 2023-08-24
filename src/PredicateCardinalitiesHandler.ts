@@ -1,7 +1,9 @@
 import {
   AccessMode,
   AuxiliaryStrategy,
+  createErrorMessage,
   Credentials,
+  getLoggerFor,
   IdentifierSetMultiMap,
   INTERNAL_QUADS,
   isContainerPath,
@@ -9,20 +11,26 @@ import {
   LDP,
   PermissionReader,
   readableToQuads,
-  ResourceStore
+  ResourceIdentifier,
+  ResourceStore,
+  StorageLocationStrategy
 } from "@solid/community-server";
 
 export class PredicateCardinalitiesHandler {
+  protected readonly logger = getLoggerFor(this);
+
   private readonly keyValueStorage: KeyValueStorage<string, unknown>;
   private readonly auxiliaryStrategy: AuxiliaryStrategy;
   private readonly reader: PermissionReader;
+  private readonly storageStrategy: StorageLocationStrategy;
 
   private readonly PREFIX = "predicate_cardinalities_";
 
-  public constructor(keyValueStorage: KeyValueStorage<string, unknown>, auxiliaryStrategy: AuxiliaryStrategy, reader: PermissionReader) {
+  public constructor(keyValueStorage: KeyValueStorage<string, unknown>, auxiliaryStrategy: AuxiliaryStrategy, reader: PermissionReader, storageStrategy: StorageLocationStrategy) {
     this.keyValueStorage = keyValueStorage;
     this.auxiliaryStrategy = auxiliaryStrategy;
     this.reader = reader;
+    this.storageStrategy = storageStrategy;
   }
 
   public async isInitialized(): Promise<boolean> {
@@ -86,11 +94,17 @@ export class PredicateCardinalitiesHandler {
       }, []);
       console.log(cardinalities);
 
+      const root = await this.getStorageRoot({path: path});
+      if (!root) {
+        return;
+      }
+
       // Add cardinalities to the cache.
       for (const cardinality of cardinalities) {
-        const currentCount = await this.keyValueStorage.get(this.PREFIX + cardinality.predicate) as any || {public: 0};
+        const key = this.PREFIX + root.path + '_' + cardinality.predicate;
+        const currentCount = await this.keyValueStorage.get(key) as any || {public: 0};
         currentCount.public += cardinality.count;
-        await this.keyValueStorage.set(this.PREFIX + cardinality.predicate, currentCount);
+        await this.keyValueStorage.set(key, currentCount);
       }
     }
   }
@@ -102,6 +116,14 @@ export class PredicateCardinalitiesHandler {
       return permissions.get({path: path})?.read === true;
     } catch (error: unknown) {
       return false;
+    }
+  }
+
+  private getStorageRoot(identifier: ResourceIdentifier): Promise<ResourceIdentifier> | undefined {
+    try {
+      return this.storageStrategy.getStorageIdentifier(identifier);
+    } catch (error: unknown) {
+      this.logger.error(`Unable to find storage root: ${createErrorMessage(error)}`);
     }
   }
 }

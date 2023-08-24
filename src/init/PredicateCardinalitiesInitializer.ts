@@ -38,7 +38,7 @@ export class PredicateCardinalitiesInitializer extends Initializer {
   }
 
   private async emit(topic: ResourceIdentifier, activity: VocabularyTerm<typeof AS>, metadata: RepresentationMetadata): Promise<void> {
-    this.logger.debug(`Emitting activity ${activity.value} to topic ${topic.path} with metadata ${metadata}`);
+    this.logger.info(`Emitting activity ${activity.value} to topic ${topic.path} with metadata ${metadata}`);
     // TODO: update the predicate cardinalities accordingly in the cache
   }
 }

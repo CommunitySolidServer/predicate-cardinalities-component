@@ -10,7 +10,8 @@
       "@type": "PredicateCardinalitiesHandler",
       "keyValueStorage": { "@id": "urn:predicate-cardinalities:default:KeyValueStorage_Cardinalities" },
       "auxiliaryStrategy": { "@id": "urn:solid-server:default:AuxiliaryStrategy" },
-      "reader": { "@id": "urn:solid-server:default:AuthAuxiliaryReader"}
+      "reader": { "@id": "urn:solid-server:default:AuthAuxiliaryReader"},
+      "storageStrategy": { "@id": "urn:solid-server:default:StorageLocationStrategy" }
     },
     {
       "comment": "Custom internal value storage for predicate cardinalities.",
