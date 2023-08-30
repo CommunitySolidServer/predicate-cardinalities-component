@@ -1,0 +1,54 @@
+{
+  "@context":[
+    "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^6.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/predicate-cardinalities-component/^1.0.0/components/context.jsonld"
+  ],
+  "@graph": [
+    {
+      "comment": "Expose a view containing the predicate cardinalities using the VoID vocabulary.",
+      "@id": "urn:predicate-cardinalities:default:HttpHandler_Cardinalities",
+      "@type": "RouterHandler",
+      "baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
+      "targetExtractor": { "@id": "urn:solid-server:default:TargetExtractor" },
+      "allowedPathNames": [ "/\\.well-known/.predicate-cardinalities" ],
+      "handler": {
+        "@type": "ParsingHttpHandler",
+        "requestParser": { "@id": "urn:solid-server:default:RequestParser" },
+        "errorHandler": { "@id": "urn:solid-server:default:ErrorHandler" },
+        "responseWriter": { "@id": "urn:solid-server:default:ResponseWriter" },
+        "operationHandler": {
+          "comment": "Converts outgoing responses based on the user preferences",
+          "@type": "ConvertingOperationHttpHandler",
+          "converter": { "@id": "urn:solid-server:default:RepresentationConverter" },
+          "operationHandler": {
+            "@type": "PredicateCardinalitiesHttpHandler",
+            "handler": { "@id": "urn:predicate-cardinalities:default:PredicateCardinalitiesHandler" }
+          }
+        }
+      }
+    },
+    {
+      "comment": "These are all the handlers a request will go through until it is handled.",
+      "@id": "urn:solid-server:default:HttpHandler",
+      "@type": "SequenceHandler",
+      "handlers": [
+        { "@id": "urn:solid-server:default:Middleware" },
+        {
+          "@id": "urn:solid-server:default:BaseHttpHandler",
+          "@type": "WaterfallHandler",
+          "handlers": [
+            { "@id": "urn:predicate-cardinalities:default:HttpHandler_Cardinalities" },
+            { "@id": "urn:solid-server:default:StaticAssetHandler" },
+            { "@id": "urn:solid-server:default:SetupHandler" },
+            { "@id": "urn:solid-server:default:OidcHandler" },
+            { "@id": "urn:solid-server:default:NotificationHttpHandler" },
+            { "@id": "urn:solid-server:default:StorageDescriptionHandler" },
+            { "@id": "urn:solid-server:default:AuthResourceHttpHandler" },
+            { "@id": "urn:solid-server:default:IdentityProviderHandler" },
+            { "@id": "urn:solid-server:default:LdpHandler" }
+          ]
+        }
+      ]
+    }
+  ]
+}

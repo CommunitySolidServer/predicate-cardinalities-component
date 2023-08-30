@@ -37,7 +37,9 @@
     "config"
   ],
   "dependencies": {
-    "@solid/community-server": "^6.0.0"
+    "@rdfjs/types": "^1.1.0",
+    "@solid/community-server": "^6.0.0",
+    "rdf-string": "^1.6.3"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.3",

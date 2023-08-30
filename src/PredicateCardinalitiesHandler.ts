@@ -15,6 +15,8 @@ import {
   ResourceStore,
   StorageLocationStrategy
 } from "@solid/community-server";
+import {Quad} from "@rdfjs/types";
+import {stringQuadToQuad} from "rdf-string";
 
 export class PredicateCardinalitiesHandler {
   protected readonly logger = getLoggerFor(this);
@@ -81,31 +83,27 @@ export class PredicateCardinalitiesHandler {
       const representation = await store.getRepresentation({path: path}, {type: {[INTERNAL_QUADS]: 1}});
       const dataStore = await readableToQuads(representation.data);
 
-      // Map from predicates to cardinalities
-      const predicates = dataStore.getPredicates(null, null, null).map(predicate => predicate.value);
-      const cardinalities = predicates.reduce((acc: any, cur) => {
-        const obj: any = acc.find((obj: any) => obj.predicate === cur);
-        if (obj) {
-          obj.count++;
-        } else {
-          acc.push({predicate: cur, count: 1});
-        }
-        return acc;
-      }, []);
-      console.log(cardinalities);
-
       const root = await this.getStorageRoot({path: path});
       if (!root) {
         return;
       }
 
+      // Map from predicates to cardinalities, start with the already existing cardinalities.
+      const key = this.PREFIX + root.path + "_public";
+      const currentCount = await this.keyValueStorage.get(key) as any || {};
+      const predicates = dataStore.getPredicates(null, null, null).map(predicate => predicate.value);
+      const cardinalities = predicates.reduce((acc: any, cur) => {
+        if (cur in acc) {
+          acc[cur]++;
+        } else {
+          acc[cur] = 1;
+        }
+        return acc;
+      }, currentCount);
+      console.log(cardinalities);
+
       // Add cardinalities to the cache.
-      for (const cardinality of cardinalities) {
-        const key = this.PREFIX + root.path + '_' + cardinality.predicate;
-        const currentCount = await this.keyValueStorage.get(key) as any || {public: 0};
-        currentCount.public += cardinality.count;
-        await this.keyValueStorage.set(key, currentCount);
-      }
+      await this.keyValueStorage.set(key, cardinalities);
     }
   }
 
@@ -125,5 +123,39 @@ export class PredicateCardinalitiesHandler {
     } catch (error: unknown) {
       this.logger.error(`Unable to find storage root: ${createErrorMessage(error)}`);
     }
+  }
+
+  public async isPredicateCardinalitiesUri(identifier: ResourceIdentifier): Promise<boolean> {
+    return identifier.path === (await this.getStorageRoot(identifier))?.path + ".well-known/.predicate-cardinalities";
+  }
+
+  public async getPredicateCardinalities(path: string): Promise<Quad[]> {
+    const key = this.PREFIX + path + "_public";
+    const cardinalities = await this.keyValueStorage.get(key) as any || {};
+    const quads = Object.entries(cardinalities).flatMap(([predicate, cardinality]) => {
+      const blankNode = '_:b' + Math.random().toString(36).substring(7);
+      return [stringQuadToQuad({
+        subject: path,
+        predicate: 'http://rdfs.org/ns/void#propertyPartition',
+        object: blankNode,
+      }),
+        stringQuadToQuad({
+          subject: blankNode,
+          predicate: 'http://rdfs.org/ns/void#property',
+          object: predicate,
+        }),
+        stringQuadToQuad({
+          subject: blankNode,
+          predicate: 'http://rdfs.org/ns/void#triples',
+          object: `"${cardinality}"^^http://www.w3.org/2001/XMLSchema#integer`,
+        })];
+    });
+    quads.push(stringQuadToQuad({
+      subject: path,
+      predicate: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+      object: 'http://rdfs.org/ns/void#Dataset',
+    }));
+
+    return quads;
   }
 }

@@ -5,7 +5,9 @@
   ],
   "import": [
     "predicate-cardinalities:config/handler.json",
-    "predicate-cardinalities:config/initializer.json"
+    "predicate-cardinalities:config/http-handler.json",
+    "predicate-cardinalities:config/initializer.json",
+    "predicate-cardinalities:config/resource-store.json"
   ],
   "@graph": [
     {
