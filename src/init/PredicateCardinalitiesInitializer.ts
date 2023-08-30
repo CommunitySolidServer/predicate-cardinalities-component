@@ -5,7 +5,7 @@ import {
   Initializer,
   RepresentationMetadata,
   ResourceIdentifier,
-  ResourceStore,
+  ResourceStore, setSafeInterval,
   VocabularyTerm
 } from "@solid/community-server";
 import {PredicateCardinalitiesHandler} from "../PredicateCardinalitiesHandler";
@@ -18,7 +18,9 @@ export class PredicateCardinalitiesInitializer extends Initializer {
   private readonly store: ResourceStore;
   private readonly emitter: ActivityEmitter;
 
-  public constructor(handler: PredicateCardinalitiesHandler, baseUrl: string, store: ResourceStore, emitter: ActivityEmitter) {
+  private dirtyCaches = new Set<string>();
+
+  public constructor(handler: PredicateCardinalitiesHandler, baseUrl: string, store: ResourceStore, emitter: ActivityEmitter, updateInterval: number) {
     super();
     this.handler = handler;
     this.baseUrl = baseUrl;
@@ -30,6 +32,17 @@ export class PredicateCardinalitiesInitializer extends Initializer {
         this.logger.error(`Error while emitting activity to update predicate cardinalities: ${error}`);
       });
     });
+
+    const timer = setSafeInterval(this.logger, 'Failed to update predicate cardinalities', async (): Promise<void> => {
+      if (this.dirtyCaches) {
+        const dirtyCaches = this.dirtyCaches;
+        this.dirtyCaches = new Set();
+        for (const pod of dirtyCaches) {
+          await this.handler.updateCache(pod, this.store);
+        }
+      }
+    }, updateInterval);
+    timer.unref();
   }
 
   public async handle(): Promise<void> {
@@ -38,7 +51,10 @@ export class PredicateCardinalitiesInitializer extends Initializer {
   }
 
   private async emit(topic: ResourceIdentifier, activity: VocabularyTerm<typeof AS>, metadata: RepresentationMetadata): Promise<void> {
-    this.logger.info(`Emitting activity ${activity.value} to topic ${topic.path} with metadata ${metadata}`);
-    // TODO: update the predicate cardinalities accordingly in the cache
+    const credentials = {};
+    const root = await this.handler.canProcessResource(topic, credentials) || await this.handler.isPermissionAuxiliary(topic);
+    if (root) {
+      this.dirtyCaches.add(root.path);
+    }
   }
 }

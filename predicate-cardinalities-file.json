@@ -55,7 +55,8 @@
       },
       "overrideParameters": {
         "@type": "PredicateCardinalitiesInitializer",
-        "store": { "@id": "urn:solid-server:default:ResourceStore" }
+        "store": { "@id": "urn:solid-server:default:ResourceStore" },
+        "updateInterval": 600000
       }
     }
   ]

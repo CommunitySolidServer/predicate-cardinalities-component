@@ -11,7 +11,8 @@
       "handler": { "@id": "urn:predicate-cardinalities:default:PredicateCardinalitiesHandler" },
       "baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
       "store": { "@id": "urn:solid-server:default:ResourceStore" },
-      "emitter": { "@id": "urn:solid-server:default:ResourceStore" }
+      "emitter": { "@id": "urn:solid-server:default:ResourceStore" },
+      "updateInterval": 600000
     },
     {
       "@id": "urn:solid-server:default:PrimaryParallelInitializer",
