@@ -28,27 +28,22 @@
       }
     },
     {
-      "comment": "These are all the handlers a request will go through until it is handled.",
-      "@id": "urn:solid-server:default:HttpHandler",
-      "@type": "SequenceHandler",
-      "handlers": [
-        { "@id": "urn:solid-server:default:Middleware" },
-        {
-          "@id": "urn:solid-server:default:BaseHttpHandler",
-          "@type": "WaterfallHandler",
-          "handlers": [
-            { "@id": "urn:predicate-cardinalities:default:HttpHandler_Cardinalities" },
-            { "@id": "urn:solid-server:default:StaticAssetHandler" },
-            { "@id": "urn:solid-server:default:SetupHandler" },
-            { "@id": "urn:solid-server:default:OidcHandler" },
-            { "@id": "urn:solid-server:default:NotificationHttpHandler" },
-            { "@id": "urn:solid-server:default:StorageDescriptionHandler" },
-            { "@id": "urn:solid-server:default:AuthResourceHttpHandler" },
-            { "@id": "urn:solid-server:default:IdentityProviderHandler" },
-            { "@id": "urn:solid-server:default:LdpHandler" }
-          ]
-        }
-      ]
+      "@type": "Override",
+      "overrideInstance": { "@id": "urn:solid-server:default:BaseHttpHandler" },
+      "overrideParameters": {
+        "@type": "WaterfallHandler",
+        "handlers": [
+          { "@id": "urn:predicate-cardinalities:default:HttpHandler_Cardinalities" },
+          { "@id": "urn:solid-server:default:StaticAssetHandler" },
+          { "@id": "urn:solid-server:default:SetupHandler" },
+          { "@id": "urn:solid-server:default:OidcHandler" },
+          { "@id": "urn:solid-server:default:NotificationHttpHandler" },
+          { "@id": "urn:solid-server:default:StorageDescriptionHandler" },
+          { "@id": "urn:solid-server:default:AuthResourceHttpHandler" },
+          { "@id": "urn:solid-server:default:IdentityProviderHandler" },
+          { "@id": "urn:solid-server:default:LdpHandler" }
+        ]
+      }
     }
   ]
 }
