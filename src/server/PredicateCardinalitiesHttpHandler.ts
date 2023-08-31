@@ -20,8 +20,6 @@ export class PredicateCardinalitiesHttpHandler extends OperationHttpHandler {
   }
 
   public async canHandle({operation}: OperationHttpHandlerInput): Promise<void> {
-    console.log("PredicateCardinalitiesHttpHandler.canHandle");
-    console.log("target: " + operation.target.path);
     if (operation.method !== "GET") {
       throw new MethodNotAllowedHttpError([operation.method], `Only GET requests can target the storage description.`);
     }
@@ -32,7 +30,6 @@ export class PredicateCardinalitiesHttpHandler extends OperationHttpHandler {
   }
 
   public async handle({operation}: OperationHttpHandlerInput): Promise<ResponseDescription> {
-    console.log("PredicateCardinalitiesHttpHandler.handle");
     const containerPath = operation.target.path?.slice(0, -".well-known/.predicate-cardinalities".length);
 
     const quads = await this.handler.getPredicateCardinalities(containerPath!);

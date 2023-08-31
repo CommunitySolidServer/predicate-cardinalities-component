@@ -36,13 +36,10 @@ export class PredicateCardinalitiesHandler {
   }
 
   public async isInitialized(): Promise<boolean> {
-    console.log("PredicateCardinalitiesHandler.isInitialized");
     return (await this.keyValueStorage.has(this.PREFIX)) && (await this.keyValueStorage.get(this.PREFIX) as any)["initialized"] || false;
   }
 
   public async initialize(baseUrl: string, store: ResourceStore): Promise<void> {
-    await this.keyValueStorage.set(this.PREFIX, {"initialized": false});  // TODO: remove this line
-    console.log("PredicateCardinalitiesHandler.initialize");
     if (await this.isInitialized()) {
       return;
     }
@@ -53,7 +50,6 @@ export class PredicateCardinalitiesHandler {
   }
 
   public async processContainer(path: string, store: ResourceStore): Promise<void> {
-    console.log("PredicateCardinalitiesHandler.processContainer");
     const container = await store.getRepresentation({path: path}, {type: {[INTERNAL_QUADS]: 1}});
     for await (const child of container.metadata.quads(container.metadata.identifier, LDP.terms.contains, null, null)) {
       if (isContainerPath(child.object.value)) {
@@ -66,8 +62,6 @@ export class PredicateCardinalitiesHandler {
   }
 
   public async processResource(identifier: ResourceIdentifier, store: ResourceStore): Promise<void> {
-    console.log("PredicateCardinalitiesHandler.processResource");
-
     const credentials = {};
     const root = await this.canProcessResource(identifier, credentials);
     if (!root) {
@@ -90,14 +84,12 @@ export class PredicateCardinalitiesHandler {
       }
       return acc;
     }, currentCount);
-    console.log(cardinalities);
 
     // Add cardinalities to the cache.
     await this.keyValueStorage.set(key, cardinalities);
   }
 
   public async canProcessResource(identifier: ResourceIdentifier, credentials: Credentials): Promise<ResourceIdentifier | undefined> {
-    console.log("PredicateCardinalitiesHandler.canProcessResource");
     if (this.auxiliaryStrategy.isAuxiliaryIdentifier(identifier)) {
       return;
     }

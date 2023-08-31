@@ -46,7 +46,6 @@ export class PredicateCardinalitiesInitializer extends Initializer {
   }
 
   public async handle(): Promise<void> {
-    console.log("PredicateCardinalitiesInitializer.handle");
     await this.handler.initialize(this.baseUrl, this.store);
   }
 
